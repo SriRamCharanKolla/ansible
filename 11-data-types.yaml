@@ -25,3 +25,12 @@
         Topics: {{ TOPICS }}
         MY_LIST: {{ MY_LIST }}
         MY_LIST_1: {{ MY_LIST_1 }}
+  - name: check type
+    ansible.builtin.debug:
+      msg: "Type is: {{ MY_LIST | type_debug }}"
+  - name: check type
+    ansible.builtin.debug:
+      msg: "Type is: {{ MY_LIST_1 | type_debug }}"
+  - name: convert list to string
+    ansible.builtin.debug:
+      msg: "Type is: {{ MY_LIST_1 | join(', ') }}"
