@@ -1,15 +1,15 @@
-- name: filters demo
-  hosts: local
-  connection: local
+- name: filters demo # Play name
+  hosts: local # Targets [local] group in inventory.ini
+  connection: local # Runs locally on control node without SSH
   vars:
-    topics: linux, ansible, shell, terraform
-    course: "DevOps with Ansible"
-    myIP: "172.14.67.233"
-    tagsMap:
+    topics: linux, ansible, shell, terraform # Comma-separated string
+    course: "DevOps with Ansible" # String variable for case conversion
+    myIP: "172.14.67.233" # IPv4 address string
+    tagsMap: # Dictionary (Map) format: key: value
       name: ansible
       project: roboshop
       component: catalogue
-    tagsList: [
+    tagsList: [ # List of key-value dictionaries format
         {
             "key": "name",
             "value": "ansible"
@@ -24,38 +24,48 @@
         }
     ]
   tasks:
-  - name: filters
+  - name: filters - default value
     ansible.builtin.debug:
-      msg: "Hi Ram Charan {{ greetings | default('Good morning')}}"
+      # 'default' filter: If variable 'greetings' is undefined, uses 'Good morning' as fallback
+      msg: "Hi Ram Charan {{ greetings | default('Good morning') }}"
   
   - name: split filter & printing output
     ansible.builtin.debug:
+      # 'split' filter: Converts a comma-separated string into a List/Array ["linux", "ansible", "shell", "terraform"]
       msg: "{{ topics | split(', ') }}"
 
-  - name: map to list filter
+  - name: map to list filter (dict2items)
     ansible.builtin.debug:
+      # 'dict2items' filter: Converts Dictionary/Map into List of [{"key": "...", "value": "..."}]
       msg: "{{ tagsMap | dict2items }}"
 
-  - name: list to map filter
+  - name: list to map filter (items2dict)
     ansible.builtin.debug:
+      # 'items2dict' filter: Converts List of key-value pairs back into a Dictionary/Map
       msg: "{{ tagsList | items2dict }}"
   
   - name: read students course.yaml
-    ansible.builtin.set_fact: # setting the variable
-      student_yaml: "{{ lookup('file', 'students.yaml') | from_yaml }}" # output saved inside student_yaml
+    ansible.builtin.set_fact: # set_fact dynamically defines a new variable at runtime
+      # 'lookup': Reads content from students.yaml file
+      # 'from_yaml' filter: Parses raw YAML text into a structured Ansible/Python object
+      student_yaml: "{{ lookup('file', 'students.yaml') | from_yaml }}"
   
   - name: convert YAML to JSON
     ansible.builtin.debug:
+      # 'to_nice_json' filter: Formats and pretty-prints the object into human-readable JSON
       msg: "{{ student_yaml | to_nice_json }}"
 
   - name: convert to upper
     ansible.builtin.debug:
+      # 'upper' filter: Converts text to UPPERCASE ("DEVOPS WITH ANSIBLE")
       msg: "{{ course | upper }}"
 
   - name: convert to lower
     ansible.builtin.debug:
+      # 'lower' filter: Converts text to lowercase ("devops with ansible")
       msg: "{{ course | lower }}"
 
   - name: check ipv4
     ansible.builtin.debug:
+      # 'ansible.utils.ipv4' filter: Validates if string is a valid IPv4 address (returns IP if valid, false if invalid)
       msg: "{{ myIP | ansible.utils.ipv4 }}"

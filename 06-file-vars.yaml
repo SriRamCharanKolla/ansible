@@ -1,11 +1,20 @@
-- name: variables declaration in a file
-  hosts: local
-  connection: local
-  vars_files:
-  - course.yaml
-  tasks: 
-  - name: print variables
-    vars:
-      COURSE: "Ansible"
+- name: variables declaration in a file # Play name
+  hosts: local # targets [local] group in inventory.ini
+  connection: local # no SSH, runs on control node
+  vars_files: # loads variables from external YAML file(s) — keeps playbook clean & reusable
+  - course.yaml # file path (relative to playbook). Contains COURSE, DURATION, TRAINER variables
+  tasks:
+  - name: print variables # Task with task-level override
+    vars: # task-level vars — HIGHER priority than vars_files
+      COURSE: "Ansible" # overrides COURSE value from course.yaml. Priority: extra-vars > task vars > vars_files > play vars
     ansible.builtin.debug:
-      msg: "Course is {{ COURSE }}, Duration is {{ DURATION }}, Trainer is {{ TRAINER }}"
+      msg: "Course is {{ COURSE }}, Duration is {{ DURATION }}, Trainer is {{ TRAINER }}" # COURSE = "Ansible" (task-level), rest from course.yaml
+
+# ===== Ansible Variable Priority (Highest to Lowest) =====
+# 1. Args (extra-vars -e) → given in command line            → 🔴 Highest
+# 2. Tasks (task vars)     → defined inside task              → 🟠 High
+# 3. File (vars_files)     → loaded from external .yaml file  → 🟡 Medium-High
+# 4. Prompt (vars_prompt)  → prompted during playbook run     → 🟡 Medium
+# 5. Play (play vars)      → defined inside play              → 🟢 Low
+# 6. Inventory             → defined in inventory file        → ⚪ Lowest
+# =========================================================

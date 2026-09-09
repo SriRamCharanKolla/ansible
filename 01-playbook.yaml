@@ -1,6 +1,8 @@
-- name: ping the server
-  # hosts: web
-  hosts: practice
-  tasks:
-  - name: ping the web server
-    ansible.builtin.ping:
+# Playbook starts with a list (-), each item is a "play"
+- name: ping the server # Play name - describes what this play does
+  # hosts: web # previously targeted 'web' group, now commented out
+  hosts: practice # target host group defined in inventory.ini under [practice]
+  # connection: ssh (default) - Ansible uses SSH to connect to remote hosts
+  tasks: # list of tasks to execute on the target hosts
+  - name: ping the web server # task name - shown in output when playbook runs
+    ansible.builtin.ping: # module that tests connectivity & Python on remote host (not ICMP ping), returns {"ping": "pong"} on success

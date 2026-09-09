@@ -12,6 +12,8 @@
     - Linux
     - Shell
     - Ansible
+    MY_LIST: linux, ansible, terraform, docker # string type
+    MY_LIST_1: ["linux", "ansible", "terraform", "docker"] # list type
   tasks:
   - name: print data type variables
     ansible.builtin.debug:
@@ -21,3 +23,5 @@
         Is Live: {{ IS_LIVE }}
         Details: {{ DETAILS }}
         Topics: {{ TOPICS }}
+        MY_LIST: {{ MY_LIST }}
+        MY_LIST_1: {{ MY_LIST_1 }}

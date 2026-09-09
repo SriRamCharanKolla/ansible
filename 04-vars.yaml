@@ -1,11 +1,11 @@
-- name: play level variables
-  hosts: local
-  connection: local
-  vars: # play level variable & can be override at task
-    COURSE: "DevOps with AWS"
+- name: play level variables # Play name
+  hosts: local # targets [local] group in inventory.ini (localhost)
+  connection: local # runs tasks locally on control node, no SSH connection needed
+  vars: # play-level variables - available to all tasks in this play. Override priority: extra-vars > task vars > play vars
+    COURSE: "DevOps with AWS" # variable defined as key: value pair
     DURATION: "140hrs"
     TRAINER: "Sivakumar Reddy"
   tasks:
-  - name: print variables
+  - name: print variables # Task: print variable values using debug module
     ansible.builtin.debug:
-      msg: "Course is {{ COURSE }}, Duration is {{ DURATION }}, Trainer is {{ TRAINER }}"
+      msg: "Course is {{ COURSE }}, Duration is {{ DURATION }}, Trainer is {{ TRAINER }}" # {{ }} = Jinja2 template syntax to access variables

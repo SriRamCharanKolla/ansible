@@ -1,7 +1,18 @@
-- name: argument variables
-  hosts: local
-  connection: local
+# No vars defined here — NAME must be passed via command line using -e flag
+# Usage: ansible-playbook -i inventory.ini 09-arg-vars.yaml -e NAME=Sriram
+- name: argument variables # Play name
+  hosts: local # targets [local] group in inventory.ini
+  connection: local # runs locally, no SSH
   tasks:
-  - name: print argument variables
+  - name: print argument variables # prints value received from command line
     ansible.builtin.debug:
-      msg: "Hi {{ NAME }}! Good morning" # NAME varible value comes from command line argument
+      msg: "Hi {{ NAME }}! Good morning" # NAME comes from -e flag (extra-vars). Without -e, this will throw "undefined variable" error
+
+# ===== Ansible Variable Priority (Highest to Lowest) =====
+# 1. Args (extra-vars -e) → given in command line            → 🔴 Highest
+# 2. Tasks (task vars)     → defined inside task              → 🟠 High
+# 3. File (vars_files)     → loaded from external .yaml file  → 🟡 Medium-High
+# 4. Prompt (vars_prompt)  → prompted during playbook run     → 🟡 Medium
+# 5. Play (play vars)      → defined inside play              → 🟢 Low
+# 6. Inventory             → defined in inventory file        → ⚪ Lowest
+# =========================================================

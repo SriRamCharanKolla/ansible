@@ -1,7 +1,18 @@
-- name: declaring variables in inventory.ini file
-  hosts: local
-  connection: local
+# Variables are NOT defined in this playbook — they come from inventory.ini file
+# In inventory.ini, variables are defined like: [local] localhost COURSE=DevOps
+- name: declaring variables in inventory.ini file # Play name
+  hosts: local # targets [local] group — variables are picked from inventory.ini for this group
+  connection: local # runs locally, no SSH
   tasks:
-  - name: print variables
+  - name: print variables # prints variable loaded from inventory.ini
     ansible.builtin.debug:
-      msg: "Course is {{ COURSE }}"
+      msg: "Course is {{ COURSE }}" # COURSE value comes from inventory.ini, not from playbook
+
+# ===== Ansible Variable Priority (Highest to Lowest) =====
+# 1. Args (extra-vars -e) → given in command line            → 🔴 Highest
+# 2. Tasks (task vars)     → defined inside task              → 🟠 High
+# 3. File (vars_files)     → loaded from external .yaml file  → 🟡 Medium-High
+# 4. Prompt (vars_prompt)  → prompted during playbook run     → 🟡 Medium
+# 5. Play (play vars)      → defined inside play              → 🟢 Low
+# 6. Inventory             → defined in inventory file        → ⚪ Lowest
+# =========================================================

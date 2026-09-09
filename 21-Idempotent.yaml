@@ -1,8 +1,24 @@
-- name: check idempotency
-  hosts: local
-  connection: local
-  become: yes
+# ==============================================================================
+# WHAT IS IDEMPOTENCY? (Simple Definition)
+# ==============================================================================
+# Idempotency means: "Running the same playbook 1 time or 100 times will produce
+# the exact same result without causing errors or duplicate changes."
+#
+# Real-World Example:
+# - If the user "ram" does NOT exist -> Ansible creates the user (Result: "changed").
+# - If the user "ram" ALREADY exists -> Ansible does nothing and skips (Result: "ok").
+#
+# Unlike Shell scripts (where 'useradd ram' fails the 2nd time with "user already exists"),
+# Ansible built-in modules are intelligent and IDEMPOTENT by design!
+# ==============================================================================
+
+- name: check idempotency # Play name
+  hosts: local # Targets [local] group in inventory.ini
+  connection: local # Runs locally on control node without SSH
+  become: yes # Requires root/sudo permissions for user management
   tasks:
   - name: user creation
-    ansible.builtin.user:
-      name: ram
+    ansible.builtin.user: # Native Ansible user module (100% IDEMPOTENT)
+      name: ram # Target username to create/ensure exists
+      # 1st run: status is "changed=1" (User is created)
+      # 2nd run: status is "ok=1, changed=0" (User already exists, no changes made)

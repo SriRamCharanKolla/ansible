@@ -1,14 +1,13 @@
-- name: Nginx installation
-  hosts: web
-  become: yes # Used to get sudo access
+- name: Nginx installation # Play name
+  hosts: web # targets [web] group from inventory.ini
+  become: yes # enables sudo/root privilege escalation (required for installing packages & managing services)
   tasks:
-  - name: installing Nginx
-    ansible.builtin.package: # Used to install packages like nginx
-      name: nginx
-      state: present # should provide state as present to install a package
-  - name: start nginx
-    ansible.builtin.service:
-      name: nginx
-      state: started
-      enabled: yes
-  
+  - name: installing Nginx # Task 1: Install Nginx package
+    ansible.builtin.package: # generic package manager module - works with yum, dnf, apt automatically based on OS
+      name: nginx # package name to install
+      state: present # "present" = install if not exists, "absent" = remove/uninstall, "latest" = install + upgrade to latest version
+  - name: start nginx # Task 2: Start & enable Nginx service
+    ansible.builtin.service: # manages system services (systemctl start/stop/restart/enable)
+      name: nginx # service name
+      state: started # "started" = ensure running, "stopped" = ensure stopped, "restarted" = restart always, "reloaded" = reload config
+      enabled: yes # yes = auto-start on boot (systemctl enable), no = won't start on boot (systemctl disable)

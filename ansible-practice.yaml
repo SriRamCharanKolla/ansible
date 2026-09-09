@@ -1,0 +1,54 @@
+- name: ansible practice
+  # hosts: local
+  hosts: localhost # To run the playbook on the local machine where Ansible is installed
+  # connection: local
+  become: yes # to get sudo(root user access)
+  vars:
+    COURSE: "DevOps"
+    FEE: 12000
+  vars_prompt:
+    - name: username
+      prompt: please enter username
+      private: false # Note: 'false', not 'flase'
+    - name: password
+      prompt: please enter password
+      private: true # Optional: default is already 'true' (hidden text)
+  tasks:
+    - name: practice one
+      vars:
+        START_DATE: "10-09-2026"
+        TOPICS:
+        - Linux
+        - Ansible
+        - Shell Scripting
+        - {Linux: "15-09-2026", Shell: "25-09-2026"}
+        number: 1
+      ansible.builtin.debug:
+        msg: "Course : {{COURSE}}, Fee : {{ FEE }}, Start Date: {{ START_DATE }}, TOPICS: {{ TOPICS }}"
+    
+    - name: condotions
+      vars:
+        number: 1
+      ansible.builtin.debug:
+        msg: "Condistion Passed"
+      when: number == 1
+
+    - name: Loops practice
+      ansible.builtin.debug:
+        # msg: " {{ item.name | default(item) }}" # Handles mixed list: if map exists uses item.name, else falls back to item (string)
+        msg: "{{ item.name if item is mapping else item }}"
+      loop:
+      - ramesh
+      - Suresh
+      - rajesh
+      - {name: "surya"}
+    - name: filters practice
+      vars:
+        Name: "Ram Charan Kola"
+      ansible.builtin.debug:
+        msg: |
+          "{{ Name | split(' ')  }}"
+          "{{ Name | lower }}"
+          "{{ Name | upper }}"
+          "username is {{ username }}, password is {{ password }}"
+      

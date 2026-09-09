@@ -1,20 +1,22 @@
-- name: ansible command vs shell module
-  hosts: local
-  connection: local
+- name: ansible command vs shell module # Play name
+  hosts: local # Targets [local] group in inventory.ini
+  connection: local # Runs locally on control node without SSH
   tasks:
   - name: command module test
-    # ansible.builtin.command: cat /etc/passwd | grep root
-    ansible.builtin.shell: cat /etc/passwd | grep root
-    register: users_output # register is used to declare & store value dynamically in a variable like users_output
+    # ansible.builtin.command: cat /etc/passwd | grep root # FAILS: command module does not support pipes (|)
+    ansible.builtin.shell: cat /etc/passwd | grep root # WORKS: shell module runs in /bin/sh and supports pipes (|)
+    register: users_output # 'register' dynamically captures the task execution result (stdout, rc, stderr) into a variable
   
   - name: print output
     ansible.builtin.debug:
-      msg: "{{ users_output }}"
+      msg: "{{ users_output }}" # Prints full registered dictionary (stdout, rc, start, end, etc.)
+      # Tip: Use "{{ users_output.stdout }}" to print only the command output string
 
   - name: shell module test
-    ansible.builtin.shell: ls -ltr > files.txt
+    ansible.builtin.shell: ls -ltr > files.txt # WORKS: shell module supports output redirection (>)
+                                              # Note: command module would treat '>' as a filename argument and fail
     register: files_output
 
   - name: print output of files
     ansible.builtin.debug:
-      msg: "{{ files_output }}"
+      msg: "{{ files_output.stdout }}" # Prints only the output stream of the command

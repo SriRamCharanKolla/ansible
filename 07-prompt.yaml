@@ -1,16 +1,26 @@
-- name: Take username & password from prompts
-  hosts: local
-  connection: local
-  vars_prompt: # used to take input from user from prompts
-  - name: username
-    prompt: Please enter your username
-    private: false # show entered username
+- name: Take username & password from prompts # Play name
+  hosts: local # targets [local] group in inventory.ini
+  connection: local # runs locally, no SSH needed
+  vars_prompt: # asks user for input at runtime before tasks execute. Useful for secrets like passwords
+  - name: username # variable name to store the input
+    prompt: Please enter your username # message shown to user in terminal
+    private: false # false = typed text is VISIBLE on screen
 
-  - name: password
-    prompt: Please enter your password
-    private: true # hide entered password
+  - name: password # variable name to store the input
+    prompt: Please enter your password # message shown to user in terminal
+    private: true # true = typed text is HIDDEN (like typing a password), this is the default
 
-  tasks: 
-    - name: print variables
+  tasks:
+    - name: print variables # prints the collected input using debug
       ansible.builtin.debug:
-        msg: "Username is {{ username }}, password is {{password }}"
+        msg: "Username is {{ username }}, password is {{password }}" # accesses prompt variables using {{ }}
+
+# ===== Ansible Variable Priority (Highest to Lowest) =====
+# 1. Args (extra-vars -e) → given in command line            → 🔴 Highest
+# 2. Tasks (task vars)     → defined inside task              → 🟠 High
+# 3. File (vars_files)     → loaded from external .yaml file  → 🟡 Medium-High
+# 4. Prompt (vars_prompt)  → prompted during playbook run     → 🟡 Medium
+# 5. Play (play vars)      → defined inside play              → 🟢 Low
+# 6. Inventory             → defined in inventory file        → ⚪ Lowest
+# =========================================================
+

@@ -1,13 +1,13 @@
-- name: task level variables
-  hosts: local
-  connection: local
-  vars: # play level variable & can be override at task level
-    COURSE: "DevOps with AWS"
-    DURATION: "140hrs"
-    TRAINER: "Sivakumar Reddy"
+- name: task level variables # Play name
+  hosts: local # targets [local] group in inventory.ini
+  connection: local # no SSH, runs locally on control node
+  vars: # play-level variables - lowest priority, can be overridden by task-level vars
+    COURSE: "DevOps with AWS" # this value will be OVERRIDDEN by task-level var below
+    DURATION: "140hrs" # no task-level override, so this play-level value is used
+    TRAINER: "Sivakumar Reddy" # no task-level override, so this play-level value is used
   tasks:
-  - name: print variables
-    vars: # task level variable & priority goes to task level variable 1st if no varible at task level the checks for play level variable
-      COURSE: "Ansible" 
+  - name: print variables # Task with its own vars
+    vars: # task-level variables - HIGHER priority than play-level vars. Output: COURSE = "Ansible" (not "DevOps with AWS")
+      COURSE: "Ansible" # overrides play-level COURSE. Priority: extra-vars(-e) > task vars > play vars
     ansible.builtin.debug:
-      msg: "Course is {{ COURSE }}, Duration is {{ DURATION }}, Trainer is {{ TRAINER }}"
+      msg: "Course is {{ COURSE }}, Duration is {{ DURATION }}, Trainer is {{ TRAINER }}" # COURSE prints "Ansible", rest from play-level

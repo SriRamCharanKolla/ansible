@@ -1,17 +1,18 @@
-- name: error handling demo
-  hosts: local
-  connection: local
-  become: yes
+- name: error handling demo # Play name
+  hosts: local # Targets [local] group in inventory.ini
+  connection: local # Runs locally on control node without SSH
+  become: yes # Requires sudo/root permissions to check and create users
   tasks:
   - name: check user exits or not
-    ansible.builtin.command: id roboshop
-    register: user_output
-    ignore_errors: true
+    ansible.builtin.command: id roboshop # 'id <username>' checks if user exists (returns rc=0 if exists, rc=1 if not)
+    register: user_output # Stores output details (stdout, rc, failed status) in variable 'user_output'
+    ignore_errors: true # Prevents playbook from stopping/failing when 'id roboshop' returns exit code != 0
   
   - name: print output
     ansible.builtin.debug:
-      msg: "{{ user_output }}"
+      msg: "{{ user_output }}" # Prints full registered dictionary (look for "rc": 1 when user does not exist)
     
   - name: create user
-    ansible.builtin.command: useradd roboshop
-    when: user_output.rc != 0
+    ansible.builtin.command: useradd roboshop # Command to create the roboshop user
+    when: user_output.rc != 0 # Condition: rc != 0 means previous command failed (user NOT found), so create user!
+                              # If user already exists (rc == 0), this task is SKIPPED (Idempotent behavior)

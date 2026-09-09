@@ -22,3 +22,12 @@
 # 4. Prompt
 # 5. Play
 # 6. Inventory
+
+# ===== Ansible Variable Priority (Highest to Lowest) =====
+# 1. Args (extra-vars -e) → given in command line            → 🔴 Highest
+# 2. Tasks (task vars)     → defined inside task              → 🟠 High
+# 3. File (vars_files)     → loaded from external .yaml file  → 🟡 Medium-High
+# 4. Prompt (vars_prompt)  → prompted during playbook run     → 🟡 Medium
+# 5. Play (play vars)      → defined inside play              → 🟢 Low
+# 6. Inventory             → defined in inventory file        → ⚪ Lowest
+# =========================================================

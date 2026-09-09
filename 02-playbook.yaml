@@ -1,6 +1,6 @@
-- name: Hello World
-  hosts: web
-  tasks:
-  - name: print Hello World
-    ansible.builtin.debug:
-      msg: "Hello World"
+- name: Hello World # Play name
+  hosts: web # targets servers under [web] group in inventory.ini
+  tasks: # list of tasks to run on target hosts
+  - name: print Hello World # task name - displayed in terminal output
+    ansible.builtin.debug: # debug module - prints messages/variables to console, runs on control node (no SSH needed)
+      msg: "Hello World" # the message to print, supports Jinja2 templates like {{ variable_name }}

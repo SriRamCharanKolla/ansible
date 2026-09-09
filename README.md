@@ -9,15 +9,16 @@
 2. [Why Do We Use Ansible? (Real-World Use Cases)](#why-do-we-use-ansible-real-world-use-cases)
 3. [Ansible Architecture & Core Terminology](#ansible-architecture--core-terminology)
 4. [Idempotency Explained](#idempotency-explained)
-5. [Playbook Structure & First Steps](#playbook-structure--first-steps)
-6. [Variables & The 6-Level Precedence Hierarchy](#variables--the-6-level-precedence-hierarchy)
-7. [Data Types & Complex Data Structures](#data-types--complex-data-structures)
-8. [Conditions & Ansible Facts](#conditions--ansible-facts)
-9. [Loops & Batch Installations](#loops--batch-installations)
-10. [Jinja2 Filters](#jinja2-filters)
-11. [Error Handling & Failure Management](#error-handling--failure-management)
-12. [Hands-on Playbook Index & Practice Map](#hands-on-playbook-index--practice-map)
-13. [Essential Ansible CLI Commands Cheat Sheet](#essential-ansible-cli-commands-cheat-sheet)
+5. [Connection Types: Remote vs Local Execution](#connection-types-remote-vs-local-execution)
+6. [Playbook Structure & First Steps](#playbook-structure--first-steps)
+7. [Variables & The 6-Level Precedence Hierarchy](#variables--the-6-level-precedence-hierarchy)
+8. [Data Types & Complex Data Structures](#data-types--complex-data-structures)
+9. [Conditions & Ansible Facts](#conditions--ansible-facts)
+10. [Loops & Batch Installations](#loops--batch-installations)
+11. [Jinja2 Filters](#jinja2-filters)
+12. [Error Handling & Failure Management](#error-handling--failure-management)
+13. [Hands-on Playbook Index & Practice Map](#hands-on-playbook-index--practice-map)
+14. [Essential Ansible CLI Commands Cheat Sheet](#essential-ansible-cli-commands-cheat-sheet)
 
 ---
 
@@ -103,6 +104,25 @@ Demonstrated in [21-Idempotent.yaml:L1-L8](file:///Users/sriramcharankolla/Deskt
 
 ---
 
+## Connection Types: Remote vs Local Execution
+
+Ansible supports various transport plugins to communicate with target nodes:
+
+| Connection Type | Use Case | Playbook Syntax |
+| :--- | :--- | :--- |
+| **`ssh`** | **Default**. Remote Linux servers via OpenSSH | *(No configuration needed)* or `connection: ssh` |
+| **`local`** | Control node executes tasks on itself without SSH | `connection: local` |
+| **`winrm`** | Remote Windows servers using Windows Remote Management | `connection: winrm` |
+| **`docker`** | Executes tasks directly inside running Docker containers | `connection: docker` |
+
+> ⚠️ **Important (`connection: local` on Localhost):**
+> - When running against remote hosts (e.g. `hosts: web`), `connection:` is completely **optional** because Ansible defaults to SSH.
+> - However, when targeting `localhost` (e.g. `hosts: local`), Ansible will still attempt `ssh localhost` unless instructed otherwise! If local SSH keys/passwords are not configured, it will fail with `Permission denied`.
+> - **Solution 1:** Explicitly specify `connection: local` in the playbook.
+> - **Solution 2 (Pro Tip):** Configure `localhost ansible_connection=local` directly in [inventory.ini:L22-L26](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/inventory.ini#L22-L26) to avoid writing `connection: local` in playbooks.
+
+---
+
 ## Playbook Structure & First Steps
 
 ### 1. Basic Ping Test ([01-playbook.yaml](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/01-playbook.yaml#L1-L5))
@@ -154,6 +174,8 @@ As documented in [10-vars-preference.yaml:L1-L24](file:///Users/sriramcharankoll
 * **Play-level variables:** [04-vars.yaml:L1-L12](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/04-vars.yaml#L1-L12)
 * **Separate variable files:** [06-file-vars.yaml:L1-L10](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/06-file-vars.yaml#L1-L10) importing [course.yaml](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/course.yaml#L1-L4).
 * **Interactive user prompts:** [07-prompt.yaml:L1-L18](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/07-prompt.yaml#L1-L18) using `vars_prompt`.
+  * `vars_prompt` must always reside at the **Play level** (never inside individual tasks).
+  * `private: true` is the default behavior (hides input for passwords); set `private: false` to make typed text visible.
 * **Inventory-defined host variables:** [08-inventory-vars.yaml:L1-L8](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/08-inventory-vars.yaml#L1-L8).
 * **Command line arguments (`-e`):** [09-arg-vars.yaml:L1-L8](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/09-arg-vars.yaml#L1-L8).
 
@@ -235,29 +257,40 @@ Instead of writing repetitive tasks, loops iterate through lists of values.
     - nginx
     - mysql
   ```
+* **Mixed List & Dictionary Iteration ([ansible-practice.yaml](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/ansible-practice.yaml#L30-L38)):**
+  Handling loops that contain both scalar strings and key-value maps:
+  ```yaml
+  msg: "{{ item.name if item is mapping else item }}"
+  # or:
+  msg: "{{ item.name | default(item) }}"
+  ```
 
 ---
 
 ## Jinja2 Filters
 
-Ansible incorporates Jinja2 filters for transforming and validating data, thoroughly practiced in [19-filters.yaml:L1-L54](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/19-filters.yaml#L1-L54):
+Ansible incorporates Jinja2 filters for transforming, formatting, and validating data, thoroughly practiced in [19-filters.yaml](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/19-filters.yaml#L1-L72):
 
 | Filter | Example | Description |
 | :--- | :--- | :--- |
-| `default` | `{{ USER \| default('guest') }}` | Provides a fallback value if the variable is undefined. |
-| `upper` / `lower` | `{{ "devops" \| upper }}` | Converts string to uppercase (`DEVOPS`) or lowercase. |
-| `min` / `max` | `{{ [10, 50, 5] \| min }}` | Returns the minimum (`5`) or maximum value from a list. |
-| `unique` | `{{ [1, 2, 2, 3] \| unique }}` | Eliminates duplicate entries from a list (`[1, 2, 3]`). |
-| `union` | `{{ list1 \| union(list2) }}` | Combines two lists without duplicates. |
-| `difference` | `{{ list1 \| difference(list2) }}` | Returns items present in list1 but missing in list2. |
-| `dict2items` | `{{ my_dict \| dict2items }}` | Converts a key-value dictionary into a list of items for looping. |
+| `default` | `{{ greetings \| default('Good morning') }}` | Provides a fallback value if the variable is undefined (prevents errors). |
+| `split` | `{{ topics \| split(', ') }}` | Splices a comma-separated string into a List/Array. |
+| `dict2items` | `{{ tagsMap \| dict2items }}` | Converts a Map/Dictionary into a List of `[{"key": "...", "value": "..."}]`. |
+| `items2dict` | `{{ tagsList \| items2dict }}` | Re-constructs a Dictionary/Map from a list of key-value pairs. |
+| `from_yaml` | `{{ lookup('file', ...) \| from_yaml }}` | Parses a raw YAML file string into an Ansible structured object. |
+| `to_nice_json` | `{{ student_yaml \| to_nice_json }}` | Formats and indents an object into clean, human-readable JSON. |
+| `upper` / `lower` | `{{ course \| upper }}` | Converts string to UPPERCASE or lowercase. |
+| `ansible.utils.ipv4` | `{{ myIP \| ansible.utils.ipv4 }}` | Validates if a string is a legitimate IPv4 address *(Requires `netaddr` library)*. |
+
+> 💡 **Netaddr Dependency:** Using `ansible.utils.ipv4` requires `netaddr` installed on the target/control Python environment: `sudo pip3 install netaddr`.
 
 ---
 
 ## Error Handling & Failure Management
 
-Demonstrated in [20-error-handling.yaml:L1-L14](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/20-error-handling.yaml#L1-L14):
-* **`ignore_errors: yes`**: Instructs Ansible to continue executing subsequent tasks even if the current task fails (non-zero exit code).
+Demonstrated in [20-error-handling.yaml](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/20-error-handling.yaml#L1-L18):
+* **`ignore_errors: true`**: Instructs Ansible to continue executing subsequent tasks even if the current command returns a non-zero exit code (e.g., `id roboshop` failing when the user doesn't exist).
+* **Return Code Inspection (`rc != 0`)**: Inspects `register_var.rc` in a subsequent `when:` condition to conditionally perform corrective actions (e.g., create a missing user only if `rc != 0`).
 * **`failed_when`**: Customizes the failure condition based on task output or regex matching.
 * **`any_errors_fatal: true`**: Stops execution immediately across all hosts if any single host encounters an error.
 

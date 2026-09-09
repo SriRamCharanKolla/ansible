@@ -1,10 +1,11 @@
-- name: conditions
-  hosts: local
-  connection: local
+- name: conditions # Play name
+  hosts: local # Targets [local] group in inventory.ini
+  connection: local # Runs on control node locally without SSH
   vars:
-    IS_LIVE: false
+    IS_LIVE: false # Boolean variable (true/false)
   tasks:
   - name: check live or not
     ansible.builtin.debug:
       msg: "Yes, it is live"
-    when: IS_LIVE
+    when: IS_LIVE # Condition check: executes task ONLY if IS_LIVE is true. Since IS_LIVE is false, this task will be SKIPPED.
+                  # Note: In 'when', do NOT use {{ }} curly braces around variables.

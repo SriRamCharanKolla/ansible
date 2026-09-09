@@ -1,13 +1,13 @@
-- name: installing packages with loops
-  hosts: local
-  connection: local
-  become: yes
+- name: installing packages with loops # Play name
+  hosts: local # Targets [local] group in inventory.ini
+  connection: local # Runs locally on control node without SSH
+  become: yes # Runs with sudo/root privileges (required for package installation)
   tasks:
   - name: install package
-    ansible.builtin.package:
-      name: "{{ item }}"
-      state: present
-    loop:
-    - mysql
-    - nginx
-    - zip
+    ansible.builtin.package: # Generic package module (uses dnf/yum on RHEL/CentOS, apt on Ubuntu)
+      name: "{{ item }}" # Special variable 'item' holds the current iteration value from loop
+      state: present # Ensures the package is installed (if missing, installs it)
+    loop: # Iterates over the list below one by one (replaces older 'with_items')
+    - mysql # 1st iteration: item = mysql
+    - nginx # 2nd iteration: item = nginx
+    - zip   # 3rd iteration: item = zip
