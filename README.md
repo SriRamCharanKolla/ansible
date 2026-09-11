@@ -189,17 +189,42 @@ Ansible natively supports all standard YAML data types, demonstrated in [11-data
 * **Integer:** `100`
 * **Boolean:** `true` / `false`
 * **List (Array):**
-  ```yaml
-  SKILLS:
-  - Docker
-  - Kubernetes
-  - Ansible
-  ```
+  * **Block Style (hyphens):**
+    ```yaml
+    TOPICS:
+    - Linux
+    - Shell
+    - Ansible
+    ```
+  * **Flow Style (square brackets inline):**
+    ```yaml
+    MY_LIST_1: ["linux", "ansible", "terraform", "docker"]
+    ```
 * **Dictionary (Key-Value Map):**
   ```yaml
   STUDENT:
     NAME: "Ram"
     BATCH: "2026"
+  ```
+
+### ⚠️ List vs. String Pitfall:
+As shown in [11-data-types.yaml:L15-L16](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/11-data-types.yaml#L15-L16):
+* `MY_LIST: linux, ansible, terraform, docker` &rarr; Evaluates to a single **String** (`str`), not a list. Iterating or indexing it directly will not behave as expected.
+* `MY_LIST_1: ["linux", "ansible", "terraform", "docker"]` &rarr; Evaluates to a true **List** (`list`).
+
+### Useful Filters for Data Types:
+As practiced in [11-data-types.yaml:L28-L36](file:///Users/sriramcharankolla/Desktop/DevOps/ansible/11-data-types.yaml#L28-L36):
+* **`type_debug`**: Returns the underlying Python/Ansible data type (`str`, `list`, `int`, `dict`):
+  ```yaml
+  - name: check type
+    ansible.builtin.debug:
+      msg: "Type is: {{ MY_LIST_1 | type_debug }}" # Output: list
+  ```
+* **`join`**: Concatenates a list into a string separated by a delimiter:
+  ```yaml
+  - name: convert list to string
+    ansible.builtin.debug:
+      msg: "Joined: {{ MY_LIST_1 | join(', ') }}" # Output: linux, ansible, terraform, docker
   ```
 
 ---
